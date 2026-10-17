@@ -1,1 +1,0 @@
-import{_t as e,it as t,n,rt as r}from"./chunks/framework.DaD4z1Q-.js";var i=JSON.parse(`{"title":"Benchmarks","description":"","frontmatter":{},"headers":[],"relativePath":"benchmarks.md","filePath":"benchmarks.md"}`),a={name:`benchmarks.md`};function o(n,i,a,o,s,c){return e(),r(`div`,null,[...i[0]||=[t("",11)]])}var s=n(a,[[`render`,o]]);export{i as __pageData,s as default};
