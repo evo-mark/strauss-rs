@@ -1,0 +1,6 @@
+{
+	"namespace_prefix": "Bench\\Xlarge\\Vendor",
+	"classmap_prefix": "Bench_Xlarge_",
+	"target_directory": "vendor-prefixed",
+	"packages": ["aws/aws-sdk-php"]
+}

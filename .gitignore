@@ -2,3 +2,10 @@ target
 node_modules
 docs/.vitepress/cache
 docs/.vitepress/dist
+
+# The benchmark suite (`cargo run --release --features benchmark -- benchmark`)
+bench/tools/*.phar
+bench/tools/php
+bench/projects/*/vendor
+bench/projects/*/vendor-prefixed
+bench/results

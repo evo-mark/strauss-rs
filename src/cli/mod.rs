@@ -116,6 +116,12 @@ enum Command {
     /// there is an autoloader to include.
     IncludeAutoloader(IncludeArgs),
 
+    /// Development only: time and measure Strauss-RS against Strauss PHP.
+    ///
+    /// Built only with `--features benchmark`, so it is not in a release.
+    #[cfg(feature = "benchmark")]
+    Benchmark(crate::benchmark::Args),
+
     /// Analyse a PHP file and print the symbols it declares and refers to.
     Analyse {
         /// The PHP file to analyse.
@@ -449,6 +455,9 @@ fn execute(command: Command) -> Result {
         Command::Prefix(args) => prefix(&args),
 
         Command::IncludeAutoloader(args) => include_autoloader(&args),
+
+        #[cfg(feature = "benchmark")]
+        Command::Benchmark(args) => crate::benchmark::execute(args),
 
         Command::Analyse { file } => analyse_file(&file),
     }

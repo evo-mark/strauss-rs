@@ -1,0 +1,6 @@
+{
+	"namespace_prefix": "Bench\\Medium\\Vendor",
+	"classmap_prefix": "Bench_Medium_",
+	"target_directory": "vendor-prefixed",
+	"packages": ["guzzlehttp/guzzle", "league/flysystem", "symfony/finder"]
+}

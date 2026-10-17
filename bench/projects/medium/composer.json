@@ -1,0 +1,22 @@
+{
+	"name": "bench/medium",
+	"require": {
+		"guzzlehttp/guzzle": "^7.9",
+		"league/flysystem": "^3.29",
+		"symfony/finder": "^7.2"
+	},
+	"config": {
+		"platform": {
+			"php": "8.3.0"
+		},
+		"platform-check": false
+	},
+	"extra": {
+		"strauss": {
+			"namespace_prefix": "Bench\\Medium\\Vendor\\",
+			"classmap_prefix": "Bench_Medium_",
+			"target_directory": "vendor-prefixed",
+			"packages": ["guzzlehttp/guzzle", "league/flysystem", "symfony/finder"]
+		}
+	}
+}

@@ -1,0 +1,6 @@
+{
+	"namespace_prefix": "Bench\\Small\\Vendor",
+	"classmap_prefix": "Bench_Small_",
+	"target_directory": "vendor-prefixed",
+	"packages": ["monolog/monolog"]
+}

@@ -1,4 +1,6 @@
 mod analyser;
+#[cfg(feature = "benchmark")]
+mod benchmark;
 mod cli;
 mod commands;
 mod config;

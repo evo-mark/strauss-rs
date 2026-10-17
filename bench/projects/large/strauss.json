@@ -1,0 +1,6 @@
+{
+	"namespace_prefix": "Bench\\Large\\Vendor",
+	"classmap_prefix": "Bench_Large_",
+	"target_directory": "vendor-prefixed",
+	"packages": ["laravel/framework"]
+}

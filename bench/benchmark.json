@@ -1,0 +1,7 @@
+{
+	"strauss_php": {
+		"version": "0.31.1",
+		"url": "https://github.com/BrianHenryIE/strauss/releases/download/0.31.1/strauss.phar"
+	},
+	"projects": ["small", "medium", "large", "xlarge"]
+}

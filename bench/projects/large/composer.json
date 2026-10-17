@@ -1,0 +1,20 @@
+{
+	"name": "bench/large",
+	"require": {
+		"laravel/framework": "^12.0"
+	},
+	"config": {
+		"platform": {
+			"php": "8.3.0"
+		},
+		"platform-check": false
+	},
+	"extra": {
+		"strauss": {
+			"namespace_prefix": "Bench\\Large\\Vendor\\",
+			"classmap_prefix": "Bench_Large_",
+			"target_directory": "vendor-prefixed",
+			"packages": ["laravel/framework"]
+		}
+	}
+}

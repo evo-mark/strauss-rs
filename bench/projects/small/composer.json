@@ -1,0 +1,22 @@
+{
+	"name": "bench/small",
+	"require": {
+		"monolog/monolog": "3.9.0"
+	},
+	"config": {
+		"platform": {
+			"php": "8.3.0"
+		},
+		"platform-check": false
+	},
+	"extra": {
+		"strauss": {
+			"namespace_prefix": "Bench\\Small\\Vendor\\",
+			"classmap_prefix": "Bench_Small_",
+			"target_directory": "vendor-prefixed",
+			"packages": [
+				"monolog/monolog"
+			]
+		}
+	}
+}

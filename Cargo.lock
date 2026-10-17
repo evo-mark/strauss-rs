@@ -825,6 +825,7 @@ dependencies = [
  "globset",
  "ignore",
  "indicatif",
+ "libc",
  "php-ast",
  "php-lexer",
  "php-rs-parser",

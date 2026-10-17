@@ -1,0 +1,20 @@
+{
+	"name": "bench/xlarge",
+	"require": {
+		"aws/aws-sdk-php": "^3.340"
+	},
+	"config": {
+		"platform": {
+			"php": "8.3.0"
+		},
+		"platform-check": false
+	},
+	"extra": {
+		"strauss": {
+			"namespace_prefix": "Bench\\Xlarge\\Vendor\\",
+			"classmap_prefix": "Bench_Xlarge_",
+			"target_directory": "vendor-prefixed",
+			"packages": ["aws/aws-sdk-php"]
+		}
+	}
+}
