@@ -1,6 +1,6 @@
 ---
 title: Exclude packages and symbols from prefixing
-description: "Leave packages, namespaces, functions, constants and files unprefixed, use the WordPress, WooCommerce and WP-CLI presets, and see why with explain."
+description: "Leave packages, namespaces, functions, constants and files unprefixed, use the Wordpress, WooCommerce and WP-CLI presets, and see why with explain."
 ---
 
 # Leaving things alone

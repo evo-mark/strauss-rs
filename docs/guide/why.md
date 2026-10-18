@@ -1,6 +1,6 @@
 ---
-title: Why prefix Composer dependencies in WordPress
-description: "Two WordPress plugins that bundle different versions of the same library can break each other. See how namespace prefixing stops the clash."
+title: Why prefix Composer dependencies in Wordpress
+description: "Two Wordpress plugins that bundle different versions of the same library can break each other. See how namespace prefixing stops the clash."
 ---
 
 # Why prefix?
