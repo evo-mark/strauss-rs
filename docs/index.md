@@ -21,10 +21,10 @@ hero:
       link: /reference/configuration
 
 features:
+  - title: Saves you time and money
+    details: Up to 139x faster than the PHP version, drastically speeding up your CI/CD flow
   - title: Avoids clashes between dependencies
     details: Two projects (i.e. Wordpress plugins) can bundle different versions of the same library. Strauss-RS gives each plugin its own copy under its own namespace.
   - title: Reads your existing setup
     details: Works out defaults based on your composer.json file, with full customisation options.
-  - title: Tells you what it did and why
-    details: The diff and explain commands show every change before it is made, and which setting decided it.
 ---
