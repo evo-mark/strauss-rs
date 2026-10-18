@@ -165,6 +165,7 @@ const config: UserConfigFn<unknown> = () => ({
       { text: "Guide", link: "/guide/getting-started" },
       { text: "Reference", link: "/reference/configuration" },
       { text: "Benchmarks", link: "/benchmarks" },
+      { text: "Test coverage", link: "/test-coverage" },
     ],
 
     sidebar: [
@@ -190,7 +191,10 @@ const config: UserConfigFn<unknown> = () => ({
       },
       {
         text: "Other",
-        items: [{ text: "Benchmarks", link: "/benchmarks" }],
+        items: [
+          { text: "Benchmarks", link: "/benchmarks" },
+          { text: "Test coverage", link: "/test-coverage" },
+        ],
       },
     ],
 
