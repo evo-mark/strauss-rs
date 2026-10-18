@@ -507,3 +507,116 @@ fn a_name_built_at_run_time_is_reported() {
         "{text}"
     );
 }
+
+/// A project with `psr/log` and a `monolog/monolog` that uses it, prefixed in
+/// place (the target is `vendor`).
+fn in_place_project(test: &str, psr_log_autoload: &str) -> PathBuf {
+    let project = PathBuf::from(env!("CARGO_TARGET_TMPDIR"))
+        .join("prefix")
+        .join(test);
+
+    let _ = fs::remove_dir_all(&project);
+
+    let write = |path: &str, text: &str| {
+        let path = project.join(path);
+
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, text).unwrap();
+    };
+
+    write(
+        "composer.json",
+        r#"{"name": "acme/app", "require": {"monolog/monolog": "*"}}"#,
+    );
+    write(
+        "strauss.json",
+        r#"{"target_directory": "vendor", "namespace_prefix": "Prefix\\"}"#,
+    );
+    write(
+        "vendor/composer/installed.json",
+        &format!(
+            r#"{{"packages": [
+            {{"name": "psr/log", "version": "3.0.2", "install-path": "../psr/log",
+             "autoload": {psr_log_autoload}}},
+            {{"name": "monolog/monolog", "version": "3.9.0", "install-path": "../monolog/monolog",
+             "require": {{"psr/log": "^3"}},
+             "autoload": {{"psr-4": {{"Monolog\\": "src/Monolog"}}}}}}
+        ]}}"#
+        ),
+    );
+    write(
+        "vendor/psr/log/src/LoggerInterface.php",
+        "<?php\nnamespace Psr\\Log;\n\ninterface LoggerInterface\n{\n}\n",
+    );
+    install_monolog(&project);
+
+    project
+}
+
+/// What Composer leaves after installing or updating `monolog/monolog`: its
+/// files, unprefixed.
+fn install_monolog(project: &Path) {
+    let path = project.join("vendor/monolog/monolog/src/Monolog/Logger.php");
+
+    fs::create_dir_all(path.parent().unwrap()).unwrap();
+    fs::write(
+        path,
+        "<?php\nnamespace Monolog;\n\nuse Psr\\Log\\LoggerInterface;\n\nclass Logger implements LoggerInterface\n{\n}\n",
+    )
+    .unwrap();
+}
+
+/// https://github.com/BrianHenryIE/strauss/issues/343: after `composer update`
+/// only the changed package is reinstalled. `psr/log` still declares the
+/// prefixed namespace, so there was nothing to map back to `Psr\Log`, and the
+/// reinstalled `monolog/monolog` was left pointing at a class that no longer
+/// exists.
+fn assert_update_is_prefixed(test: &str, psr_log_autoload: &str) {
+    let project = in_place_project(test, psr_log_autoload);
+    let logger = project.join("vendor/monolog/monolog/src/Monolog/Logger.php");
+
+    let output = prefix(&project, &[]);
+
+    assert!(output.status.success(), "{}", stderr(&output));
+    assert!(
+        fs::read_to_string(project.join("vendor/psr/log/src/LoggerInterface.php"))
+            .unwrap()
+            .contains("namespace Prefix\\Psr\\Log;")
+    );
+    assert!(
+        fs::read_to_string(&logger)
+            .unwrap()
+            .contains("use Prefix\\Psr\\Log\\LoggerInterface;")
+    );
+
+    // `composer update monolog/monolog`: new files, `psr/log` untouched.
+    install_monolog(&project);
+
+    let output = prefix(&project, &[]);
+
+    assert!(output.status.success(), "{}", stderr(&output));
+
+    let updated = fs::read_to_string(&logger).unwrap();
+
+    assert!(
+        updated.contains("use Prefix\\Psr\\Log\\LoggerInterface;"),
+        "monolog was left unprefixed:\n{updated}\n{}",
+        stderr(&output)
+    );
+    assert!(
+        !fs::read_to_string(project.join("vendor/psr/log/src/LoggerInterface.php"))
+            .unwrap()
+            .contains("Prefix\\Prefix"),
+        "psr/log was prefixed twice"
+    );
+}
+
+#[test]
+fn in_place_update_with_a_psr4_dependency() {
+    assert_update_is_prefixed("in-place-psr4", r#"{"psr-4": {"Psr\\Log\\": "src/"}}"#);
+}
+
+#[test]
+fn in_place_update_with_a_classmap_dependency() {
+    assert_update_is_prefixed("in-place-classmap", r#"{"classmap": ["src/"]}"#);
+}

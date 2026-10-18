@@ -95,6 +95,29 @@ impl NameMap {
             }
         }
 
+        // Names that were prefixed on an earlier run lead to the same place as
+        // the declarations. A name that is declared as it is takes precedence.
+        for alias in &plan.already_prefixed {
+            let entry = Entry {
+                name: alias.original.clone(),
+                replacement: Some(alias.current.clone()),
+                replace_in_strings: true,
+            };
+
+            match Group::of(alias.kind) {
+                Some(group) => {
+                    map.entries_mut(group)
+                        .entry(group.key(&alias.original))
+                        .or_insert(entry);
+                }
+                None => {
+                    map.namespaces
+                        .entry(alias.original.to_ascii_lowercase())
+                        .or_insert(entry);
+                }
+            }
+        }
+
         map
     }
 

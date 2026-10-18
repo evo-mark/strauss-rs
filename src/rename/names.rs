@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use crate::config::Config;
 use crate::packages::PackageSet;
 use crate::rename::autoload::package_relative_path;
-use crate::rename::model::{PlannedSymbol, Reason};
+use crate::rename::model::{AlreadyPrefixed, PlannedSymbol, Reason};
 use crate::symbols::SymbolKind;
 
 /// What happens to a namespace.
@@ -54,6 +54,69 @@ pub(super) fn assign(config: &Config, packages: &PackageSet, entries: &mut [Plan
     }
 
     follow_namespaces(entries, &namespaces);
+}
+
+/// The symbols whose declarations already have the prefix, with the names they
+/// had without it.
+///
+/// With the target the vendor directory, a package that isn't reinstalled by
+/// `composer update` keeps the names it was given. Code that is installed
+/// afterwards still uses the original ones, and has to be pointed at them. Only
+/// what `namespace_prefix`, `classmap_prefix` and `functions_prefix` put on can
+/// be taken off again; a name made by `namespace_replacement_patterns` can't.
+pub(super) fn already_prefixed(config: &Config, entries: &[PlannedSymbol]) -> Vec<AlreadyPrefixed> {
+    let exists = |kind: SymbolKind, name: &str| {
+        entries.iter().any(|entry| {
+            entry.kind == kind
+                && entry
+                    .name
+                    .trim_start_matches('\\')
+                    .eq_ignore_ascii_case(name)
+        })
+    };
+
+    let mut found = Vec::new();
+
+    for entry in entries.iter().filter(|entry| !entry.rename) {
+        let original = if entry.is_global() && entry.kind != SymbolKind::Namespace {
+            let prefix = match entry.kind {
+                SymbolKind::Function => config.functions_prefix.as_deref(),
+                SymbolKind::Constant => None,
+                _ => config.classmap_prefix.as_deref(),
+            };
+
+            prefix
+                .filter(|prefix| !prefix.is_empty() && entry.reason == Reason::AlreadyPrefixed)
+                .and_then(|prefix| entry.name.strip_prefix(prefix))
+                .filter(|original| !original.is_empty())
+        } else if entry.kind == SymbolKind::Constant {
+            None
+        } else {
+            config
+                .namespace_prefix
+                .as_deref()
+                .and_then(|prefix| strip_once(&entry.name, prefix))
+        };
+
+        if let Some(original) = original.filter(|original| !exists(entry.kind, original)) {
+            found.push(AlreadyPrefixed {
+                kind: entry.kind,
+                original: original.to_string(),
+                current: entry.name.clone(),
+            });
+        }
+    }
+
+    found
+}
+
+/// What is left of the name after one whole-segment `prefix`, if it has one.
+fn strip_once<'a>(name: &'a str, prefix: &str) -> Option<&'a str> {
+    let prefix = prefix.trim_matches('\\');
+
+    name.strip_prefix(prefix)?
+        .strip_prefix('\\')
+        .filter(|rest| !rest.is_empty())
 }
 
 /// A symbol that isn't renamed for its own sake still moves if its namespace

@@ -266,6 +266,23 @@ pub struct RenamePlan {
 
     /// Files left as they are because of `exclude_from_prefix.file_patterns`.
     pub files_excluded_from_prefix: Vec<ExcludedFile>,
+
+    /// Symbols that already have the prefix, such as a package prefixed in
+    /// place on an earlier run and not reinstalled since. Code that still uses
+    /// the original name is pointed at them.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub already_prefixed: Vec<AlreadyPrefixed>,
+}
+
+/// A symbol whose declaration has the prefix already, and the name it had
+/// before.
+#[derive(Debug, Clone, Serialize)]
+pub struct AlreadyPrefixed {
+    pub kind: SymbolKind,
+    /// The name without the prefix.
+    pub original: String,
+    /// The name as it is declared.
+    pub current: String,
 }
 
 /// How many symbols of a kind there are, and how many are renamed.

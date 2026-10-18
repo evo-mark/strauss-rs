@@ -149,10 +149,13 @@ pub fn plan(
     decide::decide(config, files, &files_excluded_from_prefix, &mut entries);
     names::assign(config, packages, &mut entries);
 
+    let already_prefixed = names::already_prefixed(config, &entries);
+
     RenamePlan {
         packages_to_prefix,
         symbols: entries,
         files_excluded_from_prefix,
+        already_prefixed,
     }
 }
 
