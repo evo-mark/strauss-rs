@@ -163,9 +163,8 @@ const config: UserConfigFn<unknown> = () => ({
 
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
-      { text: "Reference", link: "/reference/configuration" },
+      { text: "Configuration", link: "/reference/configuration" },
       { text: "Benchmarks", link: "/benchmarks" },
-      { text: "Test coverage", link: "/test-coverage" },
     ],
 
     sidebar: [
