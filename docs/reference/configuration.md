@@ -1,3 +1,8 @@
+---
+title: strauss.json configuration reference
+description: "Every strauss.json setting with its type and default: prefixes, target directory, packages, autoloader options, exclusions and call site updates."
+---
+
 # Configuration
 
 Settings go in a `strauss.json` next to your `composer.json`. Every setting is optional. Unknown keys are an error, so a typo is reported instead of ignored.

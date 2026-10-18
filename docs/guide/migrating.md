@@ -1,3 +1,8 @@
+---
+title: Migrate from Strauss PHP
+description: "Move your extra.strauss settings from composer.json into strauss.json with the migrate command, and learn what behaves differently from Strauss PHP."
+---
+
 # Moving from Strauss PHP
 
 If you already use Strauss PHP, the `migrate` command moves your settings across for you.

@@ -1,3 +1,8 @@
+---
+title: Command line reference
+description: "All Strauss-RS commands and options: prefix, diff, explain, init, migrate, include-autoloader, plan, config, packages, files, symbols and analyse."
+---
+
 # Command line
 
 Run the commands through the installer script, which passes everything after its name to the program:

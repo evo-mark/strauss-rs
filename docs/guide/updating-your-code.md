@@ -1,3 +1,8 @@
+---
+title: Update your own code to use prefixed names
+description: "Use update_call_sites to rewrite your plugin's own PHP files to use prefixed namespaces, preview the changes with diff and avoid common pitfalls."
+---
+
 # Updating your own code
 
 Your project's own files refer to the packages too. A line like `use Acme\Core\Client;` has to become `use Acme\Vendor\Acme\Core\Client;` once the package is prefixed. Set `update_call_sites` and `prefix` rewrites those files in place:

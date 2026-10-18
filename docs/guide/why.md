@@ -1,3 +1,8 @@
+---
+title: Why prefix Composer dependencies in WordPress
+description: "Two WordPress plugins that bundle different versions of the same library can break each other. See how namespace prefixing stops the clash."
+---
+
 # Why prefix?
 
 Say two plugins bundle different versions of the same library. Wordpress loads both into one PHP process, so whichever autoloader registers first wins and the other plugin gets the wrong version.

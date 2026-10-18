@@ -1,3 +1,8 @@
+---
+title: Troubleshooting prefixing problems
+description: "Fix class not found errors, undefined constants and functions, stale source files and objects that stop matching between plugins after prefixing."
+---
+
 # Common problems
 
 ## Class "…\Vendor\…" not found, very early in a request

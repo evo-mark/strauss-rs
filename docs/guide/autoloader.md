@@ -1,3 +1,8 @@
+---
+title: Load prefixed packages with the autoloader
+description: "How Strauss-RS writes autoload.php and a classmap, how to load them early or through Composer, and how to delete the original vendor packages."
+---
+
 # The autoloader
 
 `prefix` writes two files into the target directory: `autoload.php` and `autoload-classmap.php`. Your plugin has to load `autoload.php` before it uses any prefixed class.

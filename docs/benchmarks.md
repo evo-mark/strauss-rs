@@ -1,3 +1,10 @@
+---
+title: Benchmarks vs Strauss PHP
+description: "Strauss-RS is 24x to 28x faster than Strauss PHP on one worker and up to 139x faster on 12, with far less memory. Includes the method and how to reproduce."
+image: /social/benchmarks.jpg
+imageAlt: Benchmark results comparing Strauss-RS with Strauss PHP
+---
+
 # Benchmarks
 
 These are timings of `prefix` for Strauss PHP and Strauss-RS on four projects of different sizes. They were taken on one machine, so treat them as a guide to the size of the difference. Your results will vary with your hardware, your project and your disk.

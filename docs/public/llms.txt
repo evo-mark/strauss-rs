@@ -1,0 +1,30 @@
+# Strauss-RS
+
+> Strauss-RS is a Rust port of Strauss. It prefixes the namespaces and global symbols of a Composer project's dependencies, so two WordPress plugins can each bundle their own copy of the same library without clashing. It is a single binary and needs no PHP or other prerequisites to run.
+
+Strauss-RS reads `composer.json` and an optional `strauss.json`, copies the chosen packages to a target directory (`vendor-prefixed` by default) with classes, interfaces, traits, enums, functions and constants renamed, and writes an autoloader. It can also update your own source files to use the prefixed names. It is built mainly for WordPress plugins and themes, but works with any Composer project that has a `composer.json` and a `vendor` folder.
+
+## Guide
+
+- [Why prefix?](https://evo-mark.github.io/strauss-rs/guide/why.html): The problem prefixing solves, when two WordPress plugins load different versions of the same library into one PHP process.
+- [Getting started](https://evo-mark.github.io/strauss-rs/guide/getting-started.html): Install the script, create a `strauss.json`, run `prefix` and load the prefixed autoloader.
+- [Moving from Strauss PHP](https://evo-mark.github.io/strauss-rs/guide/migrating.html): Use the `migrate` command to move `extra.strauss` settings from `composer.json` into `strauss.json`, and what behaves differently.
+- [Updating your own code](https://evo-mark.github.io/strauss-rs/guide/updating-your-code.html): The `update_call_sites` setting, which rewrites your own files to use prefixed names, how to preview the changes with `diff` and what to do if one is wrong.
+- [The autoloader](https://evo-mark.github.io/strauss-rs/guide/autoloader.html): The generated `autoload.php` and `autoload-classmap.php`, loading them, `include_autoloader` and deleting vendor packages.
+- [Leaving things alone](https://evo-mark.github.io/strauss-rs/guide/exclusions.html): Excluding packages, namespaces, files and symbols from copying or renaming, and the built-in presets for WordPress, WooCommerce, WP-CLI and PHP constants.
+- [Common problems](https://evo-mark.github.io/strauss-rs/guide/common-problems.html): Fixes for classes not found early in a request, undefined constants and functions, and objects that no longer match across plugins.
+
+## Reference
+
+- [Configuration](https://evo-mark.github.io/strauss-rs/reference/configuration.html): Every `strauss.json` setting with its type and default. A JSON schema for editor completion is at https://evo-mark.github.io/strauss-rs/strauss.schema.json.
+- [Command line](https://evo-mark.github.io/strauss-rs/reference/cli.html): The commands `prefix`, `diff`, `explain`, `init`, `migrate`, `include-autoloader`, `plan`, `config`, `packages`, `files`, `symbols` and `analyse`, with their options.
+- [Installer script](https://evo-mark.github.io/strauss-rs/reference/installer.html): `bin/strauss-rs.sh`, which downloads the right release for your system, checks its checksum and runs it.
+
+## Other
+
+- [Benchmarks](https://evo-mark.github.io/strauss-rs/benchmarks.html): Timings of Strauss-RS against Strauss PHP on projects of different sizes, with how they were measured.
+
+## Optional
+
+- [Source code and releases](https://github.com/evo-mark/strauss-rs): The GitHub repository.
+- [Strauss (PHP)](https://github.com/BrianHenryIE/strauss): The original tool that Strauss-RS is based on.

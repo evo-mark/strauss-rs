@@ -1,3 +1,8 @@
+---
+title: Install and prefix your first project
+description: "Install the Strauss-RS script, create a strauss.json, prefix your Composer dependencies and load the prefixed autoloader in a few steps."
+---
+
 # Getting started
 
 Strauss-RS is primarily designed for Wordpress themes and plugins, but can work on any Composer-based project which has a `composer.json` file and a `vendor` folder.

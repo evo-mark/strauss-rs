@@ -1,3 +1,8 @@
+---
+title: Install and update with strauss-rs.sh
+description: "How the bin/strauss-rs.sh script downloads the right Strauss-RS release for your system, verifies its checksum, updates it and runs it."
+---
+
 # Installer script
 
 `bin/strauss-rs.sh` downloads the right release for your operating system and CPU, checks its checksum, and runs it. The program is kept next to the script, and a `.gitignore` in the same folder keeps it out of your repository. Commit the script and the `.gitignore`.

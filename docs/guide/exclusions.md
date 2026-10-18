@@ -1,3 +1,8 @@
+---
+title: Exclude packages and symbols from prefixing
+description: "Leave packages, namespaces, functions, constants and files unprefixed, use the WordPress, WooCommerce and WP-CLI presets, and see why with explain."
+---
+
 # Leaving things alone
 
 Most of the time you want everything renamed. Sometimes you do not, and Strauss-RS has a few ways to say so. Each one is listed in full on the [configuration page](/reference/configuration). This page explains when to use which.
