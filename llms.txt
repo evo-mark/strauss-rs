@@ -23,6 +23,7 @@ Strauss-RS reads `composer.json` and an optional `strauss.json`, copies the chos
 ## Other
 
 - [Benchmarks](https://evo-mark.github.io/strauss-rs/benchmarks.html): Timings of Strauss-RS against Strauss PHP on projects of different sizes, with how they were measured.
+- [Test coverage](https://evo-mark.github.io/strauss-rs/test-coverage.html): How Strauss-RS is tested, what the tests cover, and how to run them and measure coverage.
 
 ## Optional
 
