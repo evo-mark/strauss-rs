@@ -73,6 +73,20 @@ impl Options {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct PackageReport {
+    pub name: String,
+
+    /// Files written.
+    pub written: usize,
+
+    /// How many of them have changes made to them.
+    pub modified: usize,
+
+    /// Changes made across them.
+    pub edits: usize,
+}
+
 #[derive(Debug, Default, Serialize)]
 pub struct Report {
     /// Files written to the target directory (or changed in place).
@@ -80,6 +94,9 @@ pub struct Report {
 
     /// How many of them have changes made to them.
     pub modified: usize,
+
+    /// The same, for each package.
+    pub packages: Vec<PackageReport>,
 
     /// Project files changed in place by `update_call_sites`.
     pub call_sites_updated: usize,
@@ -111,6 +128,16 @@ pub fn write(input: &Input, options: &Options) -> Result<Report, OutputError> {
 
     report.written = copied.written.len();
     report.modified = copied.modified;
+    report.packages = copied
+        .packages
+        .iter()
+        .map(|(name, counts)| PackageReport {
+            name: name.clone(),
+            written: counts.written,
+            modified: counts.modified,
+            edits: counts.edits,
+        })
+        .collect();
     report.warnings.extend(copied.warnings.iter().cloned());
 
     if input.config.classmap_output && !is_target_the_vendor_directory(input.config) {

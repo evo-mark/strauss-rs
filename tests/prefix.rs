@@ -165,7 +165,9 @@ fn nothing_is_drawn_when_stderr_is_not_a_terminal() {
     // The summary only: no progress bars or the escape codes that draw them.
     assert!(!text.contains('\u{1b}'), "{text:?}");
     assert!(!text.contains("Analysing"), "{text:?}");
-    assert_eq!(text.lines().count(), 2, "{text}");
+    assert!(text.starts_with("Package "), "{text}");
+    assert!(text.contains("\nTotal "), "{text}");
+    assert!(text.contains("Wrote 13 files to"), "{text}");
 }
 
 #[test]

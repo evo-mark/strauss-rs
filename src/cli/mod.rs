@@ -883,6 +883,13 @@ fn prefix(args: &PrefixArgs) -> Result {
         }
     }
 
+    if !report.packages.is_empty() {
+        // Colour is for a person watching, and `NO_COLOR` turns it off.
+        let colour = std::io::stderr().is_terminal() && std::env::var_os("NO_COLOR").is_none();
+
+        summary!("{}", package_table(&report.packages, colour));
+    }
+
     summary!(
         "{verb} {} files to {} ({} modified)",
         report.written,
@@ -936,6 +943,95 @@ fn prefix(args: &PrefixArgs) -> Result {
     }
 
     Ok(())
+}
+
+/// The packages as a table: what was written and changed for each, with a
+/// total row.
+fn package_table(packages: &[output::PackageReport], colour: bool) -> String {
+    let headers = ["Package", "Files", "Modified", "Edits"];
+
+    let mut rows: Vec<[String; 4]> = packages
+        .iter()
+        .map(|package| {
+            [
+                package.name.clone(),
+                package.written.to_string(),
+                package.modified.to_string(),
+                package.edits.to_string(),
+            ]
+        })
+        .collect();
+
+    rows.push([
+        "Total".to_string(),
+        packages
+            .iter()
+            .map(|p| p.written)
+            .sum::<usize>()
+            .to_string(),
+        packages
+            .iter()
+            .map(|p| p.modified)
+            .sum::<usize>()
+            .to_string(),
+        packages.iter().map(|p| p.edits).sum::<usize>().to_string(),
+    ]);
+
+    let widths: [usize; 4] = std::array::from_fn(|column| {
+        rows.iter()
+            .map(|row| row[column].chars().count())
+            .chain([headers[column].len()])
+            .max()
+            .unwrap_or(0)
+    });
+
+    // Cells are padded before they are coloured, so the codes don't count
+    // towards the width.
+    let paint = |text: String, code: &str| {
+        if colour {
+            format!("\x1b[{code}m{text}\x1b[0m")
+        } else {
+            text
+        }
+    };
+
+    let line = |cells: [&str; 4], styles: [&str; 4]| {
+        let mut text = paint(
+            format!("{:<width$}", cells[0], width = widths[0]),
+            styles[0],
+        );
+
+        for column in 1..4 {
+            text.push_str("  ");
+            text.push_str(&paint(
+                format!("{:>width$}", cells[column], width = widths[column]),
+                styles[column],
+            ));
+        }
+
+        text
+    };
+
+    let rule = paint("\u{2500}".repeat(widths.iter().sum::<usize>() + 2 * 3), "2");
+    let (total, body) = rows.split_last().expect("the total row was added");
+
+    let mut lines = vec![line(headers, ["1"; 4]), rule.clone()];
+
+    lines.extend(body.iter().map(|row| {
+        // Counts of nothing are dimmed, so what changed stands out.
+        let count = |column: usize, code: &'static str| {
+            if row[column] == "0" { "2" } else { code }
+        };
+
+        line(
+            row.each_ref().map(String::as_str),
+            ["36", "0", count(2, "32"), count(3, "32")],
+        )
+    }));
+    lines.push(rule);
+    lines.push(line(total.each_ref().map(String::as_str), ["1"; 4]));
+
+    lines.join("\n")
 }
 
 fn include_autoloader(args: &IncludeArgs) -> Result {

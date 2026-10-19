@@ -1,6 +1,6 @@
 //! Copying the files to the target directory, with their changes made.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 
@@ -21,7 +21,17 @@ pub(super) struct Copied {
     /// How many of them were changed.
     pub modified: usize,
 
+    /// Files written, files changed and edits made, by package.
+    pub packages: BTreeMap<String, PackageCounts>,
+
     pub warnings: Vec<String>,
+}
+
+#[derive(Debug, Default, Clone, Copy)]
+pub(super) struct PackageCounts {
+    pub written: usize,
+    pub modified: usize,
+    pub edits: usize,
 }
 
 struct Job<'a> {
@@ -117,8 +127,14 @@ pub(super) fn run(
     });
 
     for (job, result) in jobs.iter().zip(results) {
+        let counts = copied.packages.entry(job.file.package.clone()).or_default();
+
+        counts.written += 1;
+
         if result? {
             copied.modified += 1;
+            counts.modified += 1;
+            counts.edits += job.edits.map_or(0, |edits| edits.edits.len());
         }
 
         copied.written.insert(job.file.vendor_relative_path.clone());
