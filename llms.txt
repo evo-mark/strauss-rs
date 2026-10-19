@@ -22,6 +22,7 @@ Strauss-RS reads `composer.json` and an optional `strauss.json`, copies the chos
 
 ## Other
 
+- [How it works](https://evo-mark.github.io/strauss-rs/how-it-works.html): The stages of a `prefix` run and the Rust crates used in each: the PHP parser and lexer, rayon, serde, ignore, globset, fancy-regex, similar, indicatif and clap.
 - [Benchmarks](https://evo-mark.github.io/strauss-rs/benchmarks.html): Timings of Strauss-RS against Strauss PHP on projects of different sizes, with how they were measured.
 - [Test coverage](https://evo-mark.github.io/strauss-rs/test-coverage.html): How Strauss-RS is tested, what the tests cover, and how to run them and measure coverage.
 
