@@ -11,8 +11,6 @@ These are timings of `prefix` for Strauss PHP and Strauss-RS on four projects of
 
 ## Results
 
-Each time is the median of several runs: seven for the small and medium projects, three for the large and extra large ones.
-
 | Project | Workers | Strauss PHP | Strauss-RS | Speedup | PHP peak memory | RS peak memory |
 | :------ | ------: | ----------: | ---------: | ------: | --------------: | -------------: |
 | small   |       1 |    625.4 ms |    22.8 ms |   27.4x |          70 MiB |        9.5 MiB |
