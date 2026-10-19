@@ -191,6 +191,7 @@ const config: UserConfigFn<unknown> = () => ({
       {
         text: "Other",
         items: [
+          { text: "How it works", link: "/how-it-works" },
           { text: "Benchmarks", link: "/benchmarks" },
           { text: "Test coverage", link: "/test-coverage" },
         ],

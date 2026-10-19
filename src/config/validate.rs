@@ -135,10 +135,16 @@ pub(super) fn validate_name_prefix(key: &str, prefix: &str) -> Result<String, Co
     }
 
     if !is_identifier(prefix) {
+        let hint = if key == "classmap_prefix" && prefix.contains('\\') {
+            " (a namespace belongs in `namespace_prefix`)"
+        } else {
+            ""
+        };
+
         return Err(invalid(
             key,
             format!(
-                "`{prefix}` can only contain letters, numbers and underscores, and can't start with a number"
+                "`{prefix}` can only contain letters, numbers and underscores, and can't start with a number{hint}"
             ),
         ));
     }

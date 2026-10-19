@@ -40,6 +40,17 @@ fn rejects_invalid_prefixes() {
 }
 
 #[test]
+fn a_namespace_is_not_a_classmap_prefix() {
+    let message = error(r#"{"classmap_prefix": "SoaringLeads\\Lefan_"}"#);
+
+    assert!(message.contains("can only contain letters"), "{message}");
+    assert!(message.contains("`namespace_prefix`"), "{message}");
+
+    // The hint is for `classmap_prefix` only.
+    assert!(!error(r#"{"constant_prefix": "A\\B_"}"#).contains("`namespace_prefix`"));
+}
+
+#[test]
 fn empty_constant_prefix_leaves_constants_alone() {
     assert_eq!(
         strauss_only(r#"{"constant_prefix": ""}"#).constant_prefix,
