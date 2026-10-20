@@ -47,6 +47,11 @@
             },
             "description": "The packages to process. If absent or empty, the `require` list in composer.json is used."
         },
+        "packages_includes_dev": {
+            "type": "boolean",
+            "default": false,
+            "description": "When `packages` is absent or empty, also process the packages in the `require-dev` list in composer.json. Ignored if `packages` is set."
+        },
         "update_call_sites": {
             "description": "Update the project's own files where they use prefixed symbols. `true` uses the files and directories in the project's `autoload`; an array lists them explicitly; `false` (the default) updates nothing.",
             "default": false,
