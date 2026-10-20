@@ -133,6 +133,8 @@ pub(super) struct ComposerJson {
     pub(super) autoload: Autoload,
     #[serde(default)]
     pub(super) require: Ordered<Value>,
+    #[serde(default, rename = "require-dev")]
+    pub(super) require_dev: Ordered<Value>,
     #[serde(default)]
     pub(super) config: ComposerConfig,
 }

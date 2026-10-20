@@ -54,7 +54,8 @@ pub struct Config {
 
     /// `packages`: the packages to process. Defaults to the `require` keys of
     /// `composer.json`, which includes platform requirements such as `php` and
-    /// `ext-json`; those won't match an installed package.
+    /// `ext-json`; those won't match an installed package. With
+    /// `packages_includes_dev`, the `require-dev` keys are added too.
     pub packages: Vec<String>,
 
     /// `update_call_sites`.

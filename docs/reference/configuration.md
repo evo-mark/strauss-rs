@@ -66,6 +66,15 @@ The packages to process, for example `["guzzlehttp/guzzle"]`. Everything those p
 
 Packages that are listed but not installed are skipped with a warning. Run `composer install` first.
 
+### packages_includes_dev
+
+|         |         |
+| ------- | ------- |
+| Type    | boolean |
+| Default | `false` |
+
+When `packages` is left out or empty, also process every package in the `require-dev` section of your `composer.json`, in addition to `require`. It has no effect if you list `packages` yourself.
+
 ## Prefixes
 
 ### namespace_prefix

@@ -21,6 +21,7 @@ pub(super) struct RawConfig {
     #[serde(alias = "function_prefix")]
     pub(super) functions_prefix: Option<Value>,
     pub(super) packages: Option<Vec<String>>,
+    pub(super) packages_includes_dev: Option<bool>,
     pub(super) update_call_sites: Option<Value>,
     pub(super) include_root_autoload: Option<bool>,
     pub(super) optimize_autoloader: Option<bool>,

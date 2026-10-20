@@ -135,12 +135,23 @@ impl Config {
 
                 packages
             }
-            _ => composer
-                .require
-                .0
-                .iter()
-                .map(|(name, _)| name.clone())
-                .collect(),
+            _ => {
+                let dev = if raw.packages_includes_dev.unwrap_or(false) {
+                    composer.require_dev.0.as_slice()
+                } else {
+                    &[]
+                };
+
+                let mut packages: Vec<String> = Vec::new();
+
+                for (name, _) in composer.require.0.iter().chain(dev) {
+                    if !packages.contains(name) {
+                        packages.push(name.clone());
+                    }
+                }
+
+                packages
+            }
         };
 
         let classmap_output = raw

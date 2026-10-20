@@ -244,3 +244,35 @@ fn parses_auto_on_the_command_line() {
         "expected `auto`, `true`, `false`, or a whole number"
     );
 }
+
+#[test]
+fn packages_default_to_require_only() {
+    let composer = r#"{"require": {"php": "^8", "a/a": "^1"}, "require-dev": {"b/b": "^1"}}"#;
+
+    assert_eq!(config("{}", composer).packages, vec!["php", "a/a"]);
+}
+
+#[test]
+fn packages_includes_dev_adds_require_dev() {
+    let composer =
+        r#"{"require": {"a/a": "^1", "c/c": "^1"}, "require-dev": {"b/b": "^1", "c/c": "^1"}}"#;
+
+    assert_eq!(
+        config(r#"{"packages_includes_dev": true}"#, composer).packages,
+        vec!["a/a", "c/c", "b/b"]
+    );
+}
+
+#[test]
+fn packages_includes_dev_is_ignored_when_packages_are_listed() {
+    let composer = r#"{"require": {"a/a": "^1"}, "require-dev": {"b/b": "^1"}}"#;
+
+    assert_eq!(
+        config(
+            r#"{"packages": ["a/a"], "packages_includes_dev": true}"#,
+            composer
+        )
+        .packages,
+        vec!["a/a"]
+    );
+}
