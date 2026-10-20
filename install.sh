@@ -14,13 +14,15 @@
 #   STRAUSS_RS_REPO      the GitHub repository (default: craigrileyuk/strauss-rs)
 #   STRAUSS_RS_BASE_URL  where releases are downloaded from (default: https://github.com/$STRAUSS_RS_REPO/releases)
 #   STRAUSS_RS_OFFLINE   set to 1 to never look for an update
+#   STRAUSS_RS_CHECK     set to 1 to look for an update now, even if one was looked for today
 #   STRAUSS_RS_GITIGNORE set to 0 to leave .gitignore alone
 #
 # The files it downloads are added to a .gitignore in the directory the binary is
 # kept in (created if there isn't one), so they aren't committed. This script is.
 #
 # Without STRAUSS_RS_VERSION, the latest release is looked for once a day. If it
-# can't be reached, the binary already installed is used.
+# can't be reached, the binary already installed is used. STRAUSS_RS_CHECK=1
+# looks straight away (STRAUSS_RS_OFFLINE=1 still wins).
 
 set -eu
 
@@ -240,7 +242,7 @@ main() {
 
     if [ -n "$wanted" ]; then
         case "$wanted" in v*) ;; *) wanted="v$wanted" ;; esac
-    elif [ -n "$current" ] && { [ "${STRAUSS_RS_OFFLINE:-0}" = 1 ] || checked_recently; }; then
+    elif [ -n "$current" ] && { [ "${STRAUSS_RS_OFFLINE:-0}" = 1 ] || { [ "${STRAUSS_RS_CHECK:-0}" != 1 ] && checked_recently; }; }; then
         wanted="$current"
     else
         if wanted="$(latest_tag)"; then

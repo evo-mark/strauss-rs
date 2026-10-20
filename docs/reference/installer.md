@@ -23,6 +23,7 @@ Set these as environment variables when running the script:
 | `STRAUSS_RS_VERSION`   | Use this release tag, such as `v0.4.0`, instead of the latest.        |
 | `STRAUSS_RS_DIR`       | Where the program is kept. Defaults to the folder the script is in.   |
 | `STRAUSS_RS_OFFLINE`   | Set to `1` to never look for an update.                               |
+| `STRAUSS_RS_CHECK`     | Set to `1` to look for an update now, even if one was looked for in the last day. `STRAUSS_RS_OFFLINE` still takes priority. |
 | `STRAUSS_RS_GITIGNORE` | Set to `0` to leave `.gitignore` alone.                               |
 | `STRAUSS_RS_REPO`      | The GitHub repository to download from. Defaults to `craigrileyuk/strauss-rs`. |
 | `STRAUSS_RS_BASE_URL`  | Where releases are downloaded from.                                   |
