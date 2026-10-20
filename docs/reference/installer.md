@@ -18,23 +18,25 @@ Without `STRAUSS_RS_VERSION`, the latest release is looked for once a day. If it
 
 Set these as environment variables when running the script:
 
-| Variable               | What it does                                                          |
-| ---------------------- | --------------------------------------------------------------------- |
-| `STRAUSS_RS_VERSION`   | Use this release tag, such as `v0.4.0`, instead of the latest.        |
-| `STRAUSS_RS_DIR`       | Where the program is kept. Defaults to the folder the script is in.   |
-| `STRAUSS_RS_OFFLINE`   | Set to `1` to never look for an update.                               |
+| Variable               | What it does                                                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `STRAUSS_RS_VERSION`   | Use this release tag, such as `v0.4.0`, instead of the latest.                                                               |
+| `STRAUSS_RS_DIR`       | Where the program is kept. Defaults to the folder the script is in.                                                          |
+| `STRAUSS_RS_OFFLINE`   | Set to `1` to never look for an update.                                                                                      |
 | `STRAUSS_RS_CHECK`     | Set to `1` to look for an update now, even if one was looked for in the last day. `STRAUSS_RS_OFFLINE` still takes priority. |
-| `STRAUSS_RS_GITIGNORE` | Set to `0` to leave `.gitignore` alone.                               |
-| `STRAUSS_RS_REPO`      | The GitHub repository to download from. Defaults to `craigrileyuk/strauss-rs`. |
-| `STRAUSS_RS_BASE_URL`  | Where releases are downloaded from.                                   |
-| `STRAUSS_RS_COMPOSER`  | The command that runs Composer, when `prefix` needs to rebuild Composer's autoloader and `composer` is not on your `PATH`. |
+| `STRAUSS_RS_GITIGNORE` | Set to `0` to leave `.gitignore` alone.                                                                                      |
+| `STRAUSS_RS_REPO`      | The GitHub repository to download from. Defaults to `evo-mark/strauss-rs`.                                                   |
+| `STRAUSS_RS_BASE_URL`  | Where releases are downloaded from.                                                                                          |
+| `STRAUSS_RS_COMPOSER`  | The command that runs Composer, when `prefix` needs to rebuild Composer's autoloader and `composer` is not on your `PATH`.   |
 
 To pin a version for everyone who works on the project, set it in your Composer script:
 
 ```json
 {
-	"scripts": {
-		"prefix-namespaces": ["STRAUSS_RS_VERSION=v0.4.0 sh bin/strauss-rs.sh prefix"]
-	}
+  "scripts": {
+    "prefix-namespaces": [
+      "STRAUSS_RS_VERSION=v0.4.0 sh bin/strauss-rs.sh prefix"
+    ]
+  }
 }
 ```

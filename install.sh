@@ -11,7 +11,7 @@
 # Settings, as environment variables:
 #   STRAUSS_RS_DIR       where the binary is kept (default: the directory of this script)
 #   STRAUSS_RS_VERSION   a release tag to use, such as v0.4.0, instead of the latest
-#   STRAUSS_RS_REPO      the GitHub repository (default: craigrileyuk/strauss-rs)
+#   STRAUSS_RS_REPO      the GitHub repository (default: evo-mark/strauss-rs)
 #   STRAUSS_RS_BASE_URL  where releases are downloaded from (default: https://github.com/$STRAUSS_RS_REPO/releases)
 #   STRAUSS_RS_OFFLINE   set to 1 to never look for an update
 #   STRAUSS_RS_CHECK     set to 1 to look for an update now, even if one was looked for today
@@ -26,7 +26,7 @@
 
 set -eu
 
-REPO="${STRAUSS_RS_REPO:-craigrileyuk/strauss-rs}"
+REPO="${STRAUSS_RS_REPO:-evo-mark/strauss-rs}"
 BASE_URL="${STRAUSS_RS_BASE_URL:-https://github.com/$REPO/releases}"
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 DIR="${STRAUSS_RS_DIR:-$SCRIPT_DIR}"
