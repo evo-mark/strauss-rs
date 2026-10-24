@@ -31,10 +31,10 @@ The file looks like this:
 
 ```json
 {
-	"$schema": "./bin/strauss.schema.json",
-	"namespace_prefix": "Acme\\Plugin\\Vendor",
-	"classmap_prefix": "Acme_Plugin_",
-	"include_autoloader": true
+  "$schema": "./bin/strauss.schema.json",
+  "namespace_prefix": "Acme\\Plugin\\Vendor",
+  "classmap_prefix": "Acme_Plugin_",
+  "include_autoloader": true
 }
 ```
 
@@ -48,17 +48,17 @@ Init will also add necessary scripts to your `composer.json` file to ensure that
 
 ```json
 {
-	"scripts": {
-		"prefix-namespaces": ["sh bin/strauss-rs.sh prefix"],
-		"post-install-cmd": ["@prefix-namespaces"],
-		"post-update-cmd": ["@prefix-namespaces"]
-	}
+  "scripts": {
+    "prefix-namespaces": ["sh bin/strauss-rs.sh prefix"],
+    "post-install-cmd": ["@prefix-namespaces"],
+    "post-update-cmd": ["@prefix-namespaces"]
+  }
 }
 ```
 
 Now `composer install` and `composer update` prefix your dependencies into a `vendor-prefixed/` folder as their last step.
 
-## 4. Run it
+## 3. Run it
 
 ```sh
 composer install
@@ -66,25 +66,25 @@ composer install
 
 You should see a summary of what was copied and renamed. Your dependencies are now in `vendor-prefixed/`, with names like `Acme\Plugin\Vendor\GuzzleHttp\Client`.
 
-## 5. Use the prefixed names in your code
+## 4. Use the prefixed names in your code
 
 Your own files still say `use GuzzleHttp\Client;`. Either change them by hand to the prefixed name, or let Strauss-RS do it:
 
 ```json
 {
-	"update_call_sites": true
+  "update_call_sites": true
 }
 ```
 
 This rewrites your source files in place, so commit your work first.
 
-## 6. Delete the originals
+## 5. Delete the originals
 
 Once you're happy that the prefixed output is working, you should delete the original vendor files to prevent both versions registering.
 
 ```json
 {
-	"delete_vendor_packages": true
+  "delete_vendor_packages": true
 }
 ```
 
