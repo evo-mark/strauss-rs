@@ -622,3 +622,120 @@ fn in_place_update_with_a_psr4_dependency() {
 fn in_place_update_with_a_classmap_dependency() {
     assert_update_is_prefixed("in-place-classmap", r#"{"classmap": ["src/"]}"#);
 }
+
+/// Prefixing in place with only `psr/log` in `packages`: `monolog/monolog`
+/// stays in `vendor` unprefixed, and has to use the prefixed `psr/log`. A dev
+/// package that uses it is left alone.
+#[test]
+fn in_place_updates_packages_outside_the_dependency_tree() {
+    let project = in_place_project(
+        "in-place-outside-tree",
+        r#"{"psr-4": {"Psr\\Log\\": "src/"}}"#,
+    );
+
+    fs::write(
+        project.join("strauss.json"),
+        r#"{"target_directory": "vendor", "namespace_prefix": "Prefix\\", "packages": ["psr/log"]}"#,
+    )
+    .unwrap();
+    fs::write(
+        project.join("composer.json"),
+        r#"{"name": "acme/app", "require": {"monolog/monolog": "*"}, "require-dev": {"acme/devtool": "*"}}"#,
+    )
+    .unwrap();
+
+    let installed = project.join("vendor/composer/installed.json");
+    let json = fs::read_to_string(&installed).unwrap().replace(
+        "]}",
+        r#",
+            {"name": "acme/devtool", "version": "1.0.0", "install-path": "../acme/devtool",
+             "require": {"psr/log": "^3"},
+             "autoload": {"psr-4": {"Acme\\DevTool\\": "src/"}}}
+        ]}"#,
+    );
+    fs::write(&installed, json).unwrap();
+
+    let dev_tool = project.join("vendor/acme/devtool/src/Tool.php");
+    let dev_tool_source = "<?php\nnamespace Acme\\DevTool;\n\nuse Psr\\Log\\LoggerInterface;\n\nclass Tool implements LoggerInterface\n{\n}\n";
+
+    fs::create_dir_all(dev_tool.parent().unwrap()).unwrap();
+    fs::write(&dev_tool, dev_tool_source).unwrap();
+
+    let output = prefix(&project, &[]);
+
+    assert!(output.status.success(), "{}", stderr(&output));
+
+    let logger =
+        fs::read_to_string(project.join("vendor/monolog/monolog/src/Monolog/Logger.php")).unwrap();
+
+    assert!(
+        logger.contains("use Prefix\\Psr\\Log\\LoggerInterface;"),
+        "monolog was not updated:\n{logger}\n{}",
+        stderr(&output)
+    );
+    assert!(
+        logger.contains("namespace Monolog;"),
+        "monolog was prefixed:\n{logger}"
+    );
+    assert!(
+        fs::read_to_string(project.join("vendor/psr/log/src/LoggerInterface.php"))
+            .unwrap()
+            .contains("namespace Prefix\\Psr\\Log;")
+    );
+    assert_eq!(fs::read_to_string(&dev_tool).unwrap(), dev_tool_source);
+}
+
+/// As `in_place_update_with_a_psr4_dependency`, with `psr/log` renamed by a
+/// `namespace_replacement_patterns` entry. The second run traces `Acme\Log`
+/// back to `Psr\Log` through the package's autoload rules, and doesn't put
+/// `namespace_prefix` in front of `Acme\Log`.
+#[test]
+fn in_place_update_with_a_namespace_replacement_pattern() {
+    let project = in_place_project("in-place-pattern", r#"{"psr-4": {"Psr\\Log\\": "src/"}}"#);
+
+    fs::write(
+        project.join("strauss.json"),
+        r#"{"target_directory": "vendor", "namespace_prefix": "Prefix\\",
+            "namespace_replacement_patterns": {"~^Psr\\\\Log~": "Acme\\Log"}}"#,
+    )
+    .unwrap();
+
+    let interface = project.join("vendor/psr/log/src/LoggerInterface.php");
+    let logger = project.join("vendor/monolog/monolog/src/Monolog/Logger.php");
+
+    let output = prefix(&project, &[]);
+
+    assert!(output.status.success(), "{}", stderr(&output));
+    assert!(
+        fs::read_to_string(&interface)
+            .unwrap()
+            .contains("namespace Acme\\Log;")
+    );
+    assert!(
+        fs::read_to_string(&logger)
+            .unwrap()
+            .contains("use Acme\\Log\\LoggerInterface;")
+    );
+
+    // `composer update monolog/monolog`.
+    install_monolog(&project);
+
+    let output = prefix(&project, &[]);
+
+    assert!(output.status.success(), "{}", stderr(&output));
+
+    let updated = fs::read_to_string(&logger).unwrap();
+
+    assert!(
+        updated.contains("use Acme\\Log\\LoggerInterface;"),
+        "monolog was not pointed at the renamed psr/log:\n{updated}\n{}",
+        stderr(&output)
+    );
+
+    let interface = fs::read_to_string(&interface).unwrap();
+
+    assert!(
+        interface.contains("namespace Acme\\Log;"),
+        "psr/log was renamed again:\n{interface}"
+    );
+}

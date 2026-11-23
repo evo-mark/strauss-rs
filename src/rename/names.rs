@@ -10,7 +10,7 @@
 use std::collections::HashMap;
 
 use crate::config::Config;
-use crate::packages::PackageSet;
+use crate::packages::{PackageSet, is_target_the_vendor_directory};
 use crate::rename::autoload::package_relative_path;
 use crate::rename::model::{AlreadyPrefixed, PlannedSymbol, Reason};
 use crate::symbols::SymbolKind;
@@ -61,9 +61,15 @@ pub(super) fn assign(config: &Config, packages: &PackageSet, entries: &mut [Plan
 ///
 /// With the target the vendor directory, a package that isn't reinstalled by
 /// `composer update` keeps the names it was given. Code that is installed
-/// afterwards still uses the original ones, and has to be pointed at them. Only
-/// what `namespace_prefix`, `classmap_prefix` and `functions_prefix` put on can
-/// be taken off again; a name made by `namespace_replacement_patterns` can't.
+/// afterwards still uses the original ones, and has to be pointed at them.
+///
+/// A namespaced name is traced back by renaming forwards, as PHP Strauss does
+/// since 0.32.0: the package's autoload rules still give its original
+/// namespaces (`Psr\Log`), and those are renamed to what the files now declare
+/// (`Acme\Log`), whether by `namespace_replacement_patterns` or by
+/// `namespace_prefix`. Failing that, `namespace_prefix` is taken off the front,
+/// which also covers a namespace that is only autoloaded by `classmap` or
+/// `files`. Global names lose `classmap_prefix` or `functions_prefix`.
 pub(super) fn already_prefixed(config: &Config, entries: &[PlannedSymbol]) -> Vec<AlreadyPrefixed> {
     let exists = |kind: SymbolKind, name: &str| {
         entries.iter().any(|entry| {
@@ -73,6 +79,12 @@ pub(super) fn already_prefixed(config: &Config, entries: &[PlannedSymbol]) -> Ve
                     .trim_start_matches('\\')
                     .eq_ignore_ascii_case(name)
         })
+    };
+
+    let renames = if is_target_the_vendor_directory(config) {
+        namespace_renames(entries)
+    } else {
+        Vec::new()
     };
 
     let mut found = Vec::new();
@@ -89,25 +101,79 @@ pub(super) fn already_prefixed(config: &Config, entries: &[PlannedSymbol]) -> Ve
                 .filter(|prefix| !prefix.is_empty() && entry.reason == Reason::AlreadyPrefixed)
                 .and_then(|prefix| entry.name.strip_prefix(prefix))
                 .filter(|original| !original.is_empty())
+                .map(String::from)
         } else if entry.kind == SymbolKind::Constant {
             None
         } else {
-            config
-                .namespace_prefix
-                .as_deref()
-                .and_then(|prefix| strip_once(&entry.name, prefix))
+            match renamed_from(&entry.name, &renames) {
+                Some(original) => Some(original),
+                None => config
+                    .namespace_prefix
+                    .as_deref()
+                    .and_then(|prefix| strip_once(&entry.name, prefix))
+                    .map(String::from),
+            }
         };
 
-        if let Some(original) = original.filter(|original| !exists(entry.kind, original)) {
+        let original = original.filter(|original| {
+            !original.eq_ignore_ascii_case(&entry.name) && !exists(entry.kind, original)
+        });
+
+        if let Some(original) = original {
             found.push(AlreadyPrefixed {
                 kind: entry.kind,
-                original: original.to_string(),
+                original,
                 current: entry.name.clone(),
             });
         }
     }
 
     found
+}
+
+/// Each namespace that is renamed, as (new name, original name), longest new
+/// name first so the most specific one is found first.
+fn namespace_renames(entries: &[PlannedSymbol]) -> Vec<(&str, &str)> {
+    let mut renames: Vec<(&str, &str)> = entries
+        .iter()
+        .filter(|entry| entry.kind == SymbolKind::Namespace && entry.rename)
+        .filter_map(|entry| {
+            entry
+                .replacement
+                .as_deref()
+                .map(|replacement| (replacement, entry.name.as_str()))
+        })
+        .collect();
+
+    renames.sort_by(|a, b| b.0.len().cmp(&a.0.len()).then(a.0.cmp(b.0)));
+
+    renames
+}
+
+/// The name `name` had before one of `renames` gave it its namespace:
+/// `Psr\Log\LoggerInterface` for `Acme\Log\LoggerInterface` when `Psr\Log` is
+/// renamed to `Acme\Log`.
+fn renamed_from(name: &str, renames: &[(&str, &str)]) -> Option<String> {
+    renames.iter().find_map(|(replacement, original)| {
+        let rest = strip_namespace(name, replacement)?;
+
+        Some(format!("{original}{rest}"))
+    })
+}
+
+/// What follows `namespace` in `name`, with its leading backslash: `""` for
+/// the namespace itself, `\Foo` for something in it. Compared without regard
+/// to case, as PHP compares names.
+fn strip_namespace<'a>(name: &'a str, namespace: &str) -> Option<&'a str> {
+    let head = name.get(..namespace.len())?;
+
+    if !head.eq_ignore_ascii_case(namespace) {
+        return None;
+    }
+
+    let rest = &name[namespace.len()..];
+
+    (rest.is_empty() || rest.starts_with('\\')).then_some(rest)
 }
 
 /// What is left of the name after one whole-segment `prefix`, if it has one.
@@ -197,7 +263,71 @@ fn namespace_replacements(
         );
     }
 
+    if is_target_the_vendor_directory(config) {
+        keep_already_renamed_namespaces(entries, &mut namespaces);
+    }
+
     namespaces
+}
+
+/// Prefixing in place, a package renamed on an earlier run and not reinstalled
+/// since declares its new namespace (`Acme\Log`), while its autoload rules
+/// still give the original (`Psr\Log`), which is renamed to it again. The new
+/// namespace, and those inside it, are left as they are: otherwise
+/// `namespace_prefix` would be put in front of them when no
+/// `namespace_replacement_patterns` entry matches them any more, or a pattern
+/// that matches its own output would apply twice. This follows PHP Strauss'
+/// `ChangeEnumerator::keepAlreadyRenamedNamespaces()`.
+///
+/// Only a namespace whose original nothing declares any more counts: on the
+/// first run the original is declared, so a namespace inside its new name (as
+/// `Foo\Bar\Baz` is inside `Foo\Bar`, the new name of `Foo`) is the
+/// package's own, and is renamed as usual.
+fn keep_already_renamed_namespaces(
+    entries: &mut [PlannedSymbol],
+    namespaces: &mut HashMap<String, NamespaceOutcome>,
+) {
+    let declared = |namespace: &str| {
+        entries.iter().any(|entry| {
+            entry.kind == SymbolKind::Namespace
+                && !entry.sources.is_empty()
+                && strip_namespace(&entry.name, namespace).is_some()
+        })
+    };
+
+    let renamed_before: Vec<String> = entries
+        .iter()
+        .filter(|entry| entry.kind == SymbolKind::Namespace && entry.rename)
+        .filter(|entry| !declared(&entry.name))
+        .filter_map(|entry| entry.replacement.clone())
+        .collect();
+
+    if renamed_before.is_empty() {
+        return;
+    }
+
+    for entry in entries.iter_mut() {
+        if entry.kind != SymbolKind::Namespace || !entry.rename {
+            continue;
+        }
+
+        let already_renamed = renamed_before
+            .iter()
+            .any(|replacement| strip_namespace(&entry.name, replacement).is_some());
+
+        if !already_renamed {
+            continue;
+        }
+
+        entry.rename = false;
+        entry.replacement = None;
+        entry.reason = Reason::AlreadyPrefixed;
+
+        namespaces.insert(
+            entry.name.to_ascii_lowercase(),
+            NamespaceOutcome { replacement: None },
+        );
+    }
 }
 
 /// The first `namespace_replacement_patterns` entry that changes the

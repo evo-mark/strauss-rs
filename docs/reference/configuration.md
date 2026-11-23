@@ -55,6 +55,8 @@ A complete example:
 
 The folder, relative to the project, that the prefixed files are copied into. Leading and trailing slashes are ignored. It must not contain `..`.
 
+Set it to your vendor directory (`"vendor"`) to prefix the packages where they are, without copying them. Your other non-dev packages, those your `composer.json` `require`s that are not in `packages` or their dependencies, are left unprefixed, but their files are updated where they use the prefixed names. Dev packages are left alone. After `composer update` reinstalls only some packages, the next run points them at the names the other packages were given on the earlier run, including names made by `namespace_replacement_patterns`.
+
 ### packages
 
 |         |                                  |

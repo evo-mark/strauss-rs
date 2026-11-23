@@ -110,8 +110,7 @@ pub fn plan(
     table: &SymbolTable,
 ) -> RenamePlan {
     let packages_to_prefix: Vec<String> = packages
-        .packages
-        .iter()
+        .prefixed()
         .filter(|package| {
             !config
                 .exclude_from_prefix
@@ -146,7 +145,13 @@ pub fn plan(
 
     let files_excluded_from_prefix = decide::files_excluded_from_prefix(config, files);
 
-    decide::decide(config, files, &files_excluded_from_prefix, &mut entries);
+    decide::decide(
+        config,
+        packages,
+        files,
+        &files_excluded_from_prefix,
+        &mut entries,
+    );
     names::assign(config, packages, &mut entries);
 
     let already_prefixed = names::already_prefixed(config, &entries);

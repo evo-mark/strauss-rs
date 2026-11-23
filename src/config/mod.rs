@@ -218,6 +218,12 @@ impl Config {
             constant_prefix,
             functions_prefix,
             packages,
+            project_requires: composer
+                .require
+                .0
+                .iter()
+                .map(|(name, _)| name.clone())
+                .collect(),
             update_call_sites: resolve_update_call_sites(raw.update_call_sites)?,
             include_root_autoload: raw.include_root_autoload.unwrap_or(false),
             optimize_autoloader: raw.optimize_autoloader.unwrap_or(true),

@@ -5,10 +5,10 @@
 //! `namespace_replacement_patterns` entry, unless an exclusion applies. This
 //! follows PHP Strauss' `MarkSymbolsForRenaming`.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::config::Config;
-use crate::packages::{PackageFile, is_target_the_vendor_directory};
+use crate::packages::{PackageFile, PackageSet, is_target_the_vendor_directory};
 use crate::php_pattern::PhpPattern;
 use crate::rename::is_within_namespace;
 use crate::rename::model::{ExcludedFile, PlannedSymbol, Reason};
@@ -37,6 +37,7 @@ pub(super) fn files_excluded_from_prefix(
 
 pub(super) fn decide(
     config: &Config,
+    packages: &PackageSet,
     files: &[PackageFile],
     excluded_files: &[ExcludedFile],
     entries: &mut [PlannedSymbol],
@@ -52,6 +53,13 @@ pub(super) fn decide(
         .collect();
 
     let target_is_vendor = is_target_the_vendor_directory(config);
+
+    let unprefixed: HashSet<String> = packages
+        .packages
+        .iter()
+        .filter(|package| package.unprefixed)
+        .map(|package| package.name.to_ascii_lowercase())
+        .collect();
 
     for entry in entries.iter_mut() {
         let namespace = match entry.kind {
@@ -74,13 +82,29 @@ pub(super) fn decide(
             Reason::NotAutoloaded
         };
 
-        let Some(reason) = exclusion(config, entry, &copied, &excluded, target_is_vendor) else {
+        let reason = not_prefixed(entry, &unprefixed)
+            .or_else(|| exclusion(config, entry, &copied, &excluded, target_is_vendor));
+
+        let Some(reason) = reason else {
             continue;
         };
 
         entry.marked = false;
         entry.reason = reason;
     }
+}
+
+/// Whether only packages outside the dependency tree of `packages` declare the
+/// symbol. One that a prefixed package declares too is renamed: the prefixed
+/// copy has the new name, and the other declaration is left as it is.
+fn not_prefixed(entry: &PlannedSymbol, unprefixed: &HashSet<String>) -> Option<Reason> {
+    let first = entry.first_package()?;
+
+    entry
+        .packages
+        .iter()
+        .all(|package| unprefixed.contains(&package.to_ascii_lowercase()))
+        .then(|| Reason::PackageNotPrefixed(first.to_string()))
 }
 
 /// Why the symbol is excluded from renaming, if it is.

@@ -27,6 +27,10 @@ pub enum Reason {
     PackageExcludedFromCopy(String),
     /// Its package is in `exclude_from_prefix.packages`.
     PackageExcludedFromPrefix(String),
+    /// Only packages outside the dependency tree of `packages` declare it.
+    /// They are in the vendor directory, which is the target, so their files
+    /// are updated, but they aren't prefixed.
+    PackageNotPrefixed(String),
     /// Its namespace is, or is within, this `exclude_from_prefix.namespaces`
     /// entry.
     NamespaceExcludedFromPrefix(String),
@@ -69,6 +73,7 @@ impl Reason {
             Reason::NotAutoloaded => "not_autoloaded",
             Reason::PackageExcludedFromCopy(_) => "package_excluded_from_copy",
             Reason::PackageExcludedFromPrefix(_) => "package_excluded_from_prefix",
+            Reason::PackageNotPrefixed(_) => "package_not_prefixed",
             Reason::NamespaceExcludedFromPrefix(_) => "namespace_excluded_from_prefix",
             Reason::FileExcludedFromPrefix { .. } => "file_excluded_from_prefix",
             Reason::FunctionExcludedFromPrefix(_) => "function_excluded_from_prefix",
@@ -116,6 +121,12 @@ impl fmt::Display for Reason {
                 write!(
                     formatter,
                     "package {package} is in exclude_from_prefix.packages"
+                )
+            }
+            Reason::PackageNotPrefixed(package) => {
+                write!(
+                    formatter,
+                    "package {package} is not in the dependency tree of packages"
                 )
             }
             Reason::NamespaceExcludedFromPrefix(namespace) => {

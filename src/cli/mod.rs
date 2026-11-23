@@ -62,6 +62,15 @@ enum Command {
     /// Files that can't be analysed are reported on stderr.
     Symbols(ScanArgs),
 
+    /// List the symbols declared in PHP files and directories, one per line.
+    ///
+    /// Needs no project: every `.php` file under the paths is analysed, and its
+    /// namespaces, classes, interfaces, traits, enums, functions and constants
+    /// are printed, sorted, as the type then the name. With one `--type`, only
+    /// the names are printed, for piping. Files that can't be analysed are
+    /// reported on stderr.
+    ListSymbols(ListSymbolsArgs),
+
     /// Show which symbols would be renamed, to what, and why not the others, as
     /// JSON.
     ///
@@ -161,6 +170,57 @@ struct ScanArgs {
 
     #[command(flatten)]
     parallel: ParallelArgs,
+}
+
+/// What `list-symbols` lists.
+#[derive(Debug, Args)]
+struct ListSymbolsArgs {
+    /// Files and directories to analyse. Defaults to the current directory.
+    paths: Vec<PathBuf>,
+
+    /// Only list symbols of this type. Comma-separated or repeated.
+    #[arg(
+        short = 't',
+        long = "type",
+        value_name = "TYPE",
+        value_delimiter = ',',
+        ignore_case = true
+    )]
+    types: Vec<ListedType>,
+
+    /// Only list symbols in the global namespace: those that could clash with
+    /// another plugin's. No namespaces are listed.
+    #[arg(short = 'g', long)]
+    global: bool,
+
+    #[command(flatten)]
+    parallel: ParallelArgs,
+}
+
+/// A `--type` for `list-symbols`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+enum ListedType {
+    Namespace,
+    Class,
+    Interface,
+    Trait,
+    Enum,
+    Function,
+    Constant,
+}
+
+impl From<ListedType> for SymbolKind {
+    fn from(listed: ListedType) -> Self {
+        match listed {
+            ListedType::Namespace => SymbolKind::Namespace,
+            ListedType::Class => SymbolKind::Class,
+            ListedType::Interface => SymbolKind::Interface,
+            ListedType::Trait => SymbolKind::Trait,
+            ListedType::Enum => SymbolKind::Enum,
+            ListedType::Function => SymbolKind::Function,
+            ListedType::Constant => SymbolKind::Constant,
+        }
+    }
 }
 
 /// A project, and whether to write the change.
@@ -430,6 +490,16 @@ fn execute(command: Command) -> Result {
             Ok(())
         }
 
+        Command::ListSymbols(args) => {
+            let output = render_list_symbols(&args)?;
+
+            if !output.is_empty() {
+                println!("{output}");
+            }
+
+            Ok(())
+        }
+
         Command::Plan(args) => {
             println!("{}", render_plan(&args)?);
 
@@ -502,6 +572,35 @@ fn render_files(args: &ScanArgs) -> Result<String> {
     Ok(serde_json::to_string_pretty(
         &serde_json::json!({ "files": files }),
     )?)
+}
+
+fn render_list_symbols(args: &ListSymbolsArgs) -> Result<String> {
+    use crate::commands::list_symbols;
+
+    let paths = if args.paths.is_empty() {
+        vec![PathBuf::from(".")]
+    } else {
+        args.paths.clone()
+    };
+
+    let filter = list_symbols::Filter {
+        types: args.types.iter().map(|listed| (*listed).into()).collect(),
+        global: args.global,
+    };
+
+    let workers =
+        crate::parallel::worker_count(args.parallel.parallel.unwrap_or(Parallel::Auto), usize::MAX);
+
+    let listing = list_symbols::list(&paths, &filter, workers)?;
+
+    print_grouped_warnings(
+        listing
+            .warnings
+            .iter()
+            .map(|(file, message)| (file.as_str(), message.as_str())),
+    );
+
+    Ok(list_symbols::render(&listing))
 }
 
 fn render_symbols(args: &ScanArgs) -> Result<String> {

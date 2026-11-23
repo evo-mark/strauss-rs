@@ -58,6 +58,13 @@ pub struct Config {
     /// `packages_includes_dev`, the `require-dev` keys are added too.
     pub packages: Vec<String>,
 
+    /// The `require` keys of the project's `composer.json`: where the
+    /// project's non-dev packages start. With the target the vendor directory,
+    /// the installed packages these lead to that aren't in `packages` still use
+    /// the prefixed names, so their files are updated.
+    #[serde(skip)]
+    pub project_requires: Vec<String>,
+
     /// `update_call_sites`.
     pub update_call_sites: UpdateCallSites,
 

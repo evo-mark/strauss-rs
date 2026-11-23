@@ -1,0 +1,17 @@
+{
+  "name": "strauss-rs",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "docs:dev": "pnpm --filter=strauss-rs-docs run dev",
+    "docs:build": "pnpm --filter=strauss-rs-docs run build",
+    "docs:preview": "pnpm --filter=strauss-rs-docs run preview",
+    "docs:deploy": "pnpm --filter=strauss-rs-docs run deploy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@12.23.0"
+}

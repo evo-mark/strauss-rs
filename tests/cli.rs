@@ -208,3 +208,54 @@ fn parallel_is_auto_unless_set() {
     // Spelling it out changes nothing.
     assert_eq!(default.stdout, explicit.stdout);
 }
+
+#[test]
+fn list_symbols_takes_types_comma_separated_or_repeated() {
+    let fixture = path("test/symbols-fixture/vendor");
+
+    let comma = strauss(&["list-symbols", &fixture, "-t", "class,function"]);
+    let repeated = strauss(&["list-symbols", &fixture, "--type=class", "--type=FUNCTION"]);
+
+    assert!(comma.status.success(), "{}", stderr(&comma));
+    assert_eq!(stdout(&comma), stdout(&repeated));
+
+    let text = stdout(&comma);
+
+    assert!(text.contains("class      GlobalClass"), "{text}");
+    assert!(text.contains("function   global_function"), "{text}");
+    assert!(!text.contains("namespace "), "{text}");
+
+    // The unparseable fixture file is reported, not fatal.
+    assert!(stderr(&comma).contains("broken.php"));
+}
+
+#[test]
+fn list_symbols_global_with_one_type_prints_only_names() {
+    let output = strauss(&[
+        "list-symbols",
+        &path("test/symbols-fixture/vendor"),
+        "--global",
+        "-t",
+        "function",
+    ]);
+
+    assert!(output.status.success(), "{}", stderr(&output));
+
+    for line in stdout(&output).lines() {
+        assert!(!line.contains(' ') && !line.contains('\\'), "{line}");
+    }
+
+    assert!(
+        stdout(&output)
+            .lines()
+            .any(|line| line == "global_function")
+    );
+}
+
+#[test]
+fn list_symbols_rejects_an_unknown_type() {
+    let output = strauss(&["list-symbols", "-t", "bogus"]);
+
+    assert!(!output.status.success());
+    assert!(stderr(&output).contains("possible values"));
+}

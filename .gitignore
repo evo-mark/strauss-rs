@@ -9,3 +9,5 @@ bench/tools/php
 bench/projects/*/vendor
 bench/projects/*/vendor-prefixed
 bench/results
+
+pnpm-lock.yaml

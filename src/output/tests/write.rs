@@ -351,6 +351,7 @@ fn package(name: &str, dependencies: &[&str]) -> Package {
         suggests: Vec::new(),
         license: Vec::new(),
         dependencies: dependencies.iter().map(|name| name.to_string()).collect(),
+        unprefixed: false,
     }
 }
 

@@ -47,6 +47,13 @@ pub struct Package {
     /// The packages in this enumeration that it depends on: those it requires
     /// directly, and those that `provide` or `replace` something it requires.
     pub dependencies: Vec<String>,
+
+    /// Not to be prefixed: a non-dev package outside the dependency tree of
+    /// `packages`, added because the target is the vendor directory. Its files
+    /// are updated where they use the prefixed names, and nothing it declares
+    /// is renamed.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub unprefixed: bool,
 }
 
 /// Why a package was left out.
@@ -97,6 +104,11 @@ pub struct PackageSet {
 }
 
 impl PackageSet {
+    /// The packages to prefix: all but those added as [`Package::unprefixed`].
+    pub fn prefixed(&self) -> impl Iterator<Item = &Package> {
+        self.packages.iter().filter(|package| !package.unprefixed)
+    }
+
     pub fn get(&self, name: &str) -> Option<&Package> {
         self.packages
             .iter()

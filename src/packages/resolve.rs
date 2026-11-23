@@ -15,6 +15,7 @@ use std::fs;
 use std::path::{Component, Path, PathBuf};
 
 use crate::config::Config;
+use crate::packages::files::is_target_the_vendor_directory;
 use crate::packages::installed::{InstalledIndex, InstalledPackage};
 use crate::packages::model::{Package, PackageSet, PackageWarning, SkipReason, SkippedPackage};
 
@@ -65,10 +66,23 @@ pub fn resolve(config: &Config, index: &InstalledIndex) -> PackageSet {
         vendor_dir: config.project_dir.join(&config.vendor_directory),
         seen: HashSet::new(),
         set: PackageSet::default(),
+        unprefixed: false,
     };
 
     for name in &config.packages {
         resolver.visit(name);
+    }
+
+    // Prefixing in place, the project's other non-dev packages stay in the
+    // vendor directory beside the prefixed ones and have to use their new
+    // names, as PHP Strauss does since 0.32.0. Packages outside the project's
+    // `require` tree are dev packages, and are left alone.
+    if is_target_the_vendor_directory(config) {
+        resolver.unprefixed = true;
+
+        for name in &config.project_requires {
+            resolver.visit(name);
+        }
     }
 
     link_dependencies(&mut resolver.set.packages);
@@ -83,6 +97,9 @@ struct Resolver<'a> {
     /// Lower-cased names already visited, found or not.
     seen: HashSet<String>,
     set: PackageSet,
+    /// Whether the packages visited now are outside the dependency tree of
+    /// `packages`: [`Package::unprefixed`].
+    unprefixed: bool,
 }
 
 impl Resolver<'_> {
@@ -102,6 +119,12 @@ impl Resolver<'_> {
         }
 
         let Some(installed) = self.find(name) else {
+            // Outside the tree, a missing package is no loss: nothing would be
+            // prefixed in it.
+            if self.unprefixed {
+                return;
+            }
+
             // A virtual package (`psr/log-implementation`) is satisfied by
             // whatever provides it, so it isn't missing.
             if !self.index.is_provided(name) {
@@ -180,6 +203,7 @@ impl Resolver<'_> {
                 .map(|license| license.iter().map(String::from).collect())
                 .unwrap_or_default(),
             dependencies: Vec::new(),
+            unprefixed: self.unprefixed,
         }
     }
 

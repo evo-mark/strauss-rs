@@ -1,6 +1,6 @@
 ---
 title: Command line reference
-description: "All Strauss-RS commands and options: prefix, diff, explain, init, migrate, include-autoloader, plan, config, packages, files, symbols and analyse."
+description: "All Strauss-RS commands and options: prefix, diff, explain, init, migrate, include-autoloader, plan, config, packages, files, symbols, list-symbols and analyse."
 ---
 
 # Command line
@@ -42,6 +42,7 @@ Most commands also take:
 | [`packages`](#packages) | List the packages to process.                                       |
 | [`files`](#files)    | List the files of those packages.                                      |
 | [`symbols`](#symbols) | List the symbols each package declares.                               |
+| [`list-symbols`](#list-symbols) | List the symbols declared in any PHP files, one per line.   |
 | [`analyse`](#analyse) | Analyse one PHP file.                                                 |
 
 ### prefix
@@ -152,6 +153,31 @@ Lists the symbols each package declares as JSON: namespaces, classes, interfaces
 | Option                                | What it does |
 | ------------------------------------- | ------------ |
 | `--parallel[=<auto\|false\|N>]`        | As for `prefix`. |
+
+### list-symbols
+
+```sh
+sh bin/strauss-rs.sh list-symbols vendor --global --type=function
+```
+
+Lists the symbols declared in the `.php` files under the given files and folders, one per line, sorted and grouped by type: namespaces, classes, interfaces, traits, enums, functions, then constants. It needs no `strauss.json` or `composer.json`, so you can point it at anything. A folder is searched for `.php` files, leaving out `.git` and anything a `.gitignore` inside that folder ignores. A file you name is read whatever its extension. PHP's own symbols, which polyfills declare again, are left out. Files that cannot be read are reported on stderr.
+
+Each line is the type, then the name. With a single `--type`, only the names are printed, so the output can be piped.
+
+| Option                                | What it does |
+| ------------------------------------- | ------------ |
+| `[PATHS]...`                          | Files and folders to read. Defaults to the current folder. |
+| `-t`, `--type <TYPE>`                 | Only list this type: `namespace`, `class`, `interface`, `trait`, `enum`, `function` or `constant`. Comma-separated or repeated. |
+| `-g`, `--global`                      | Only list symbols in the global namespace, which are the ones that could clash with another plugin's. No namespaces are listed. |
+| `--parallel[=<auto\|false\|N>]`        | How many workers read the files. Defaults to one per CPU. |
+
+```sh
+# The namespaces, to help write namespace_replacement_patterns.
+sh bin/strauss-rs.sh list-symbols vendor --type=namespace
+
+# Several folders and a file.
+sh bin/strauss-rs.sh list-symbols src vendor/psr/log my-plugin.php -t class,interface
+```
 
 ### analyse
 

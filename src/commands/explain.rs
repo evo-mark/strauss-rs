@@ -252,6 +252,9 @@ fn hint(reason: &Reason) -> Option<String> {
         Reason::PackageExcludedFromPrefix(package) => {
             format!("remove `{package}` from exclude_from_prefix.packages to rename it")
         }
+        Reason::PackageNotPrefixed(package) => {
+            format!("add `{package}` to packages to rename it")
+        }
         Reason::NamespaceExcludedFromPrefix(namespace) => {
             format!("remove `{namespace}` from exclude_from_prefix.namespaces to rename it")
         }
