@@ -17,7 +17,7 @@ Strauss-RS reads `composer.json` and an optional `strauss.json`, copies the chos
 ## Reference
 
 - [Configuration](https://evo-mark.github.io/strauss-rs/reference/configuration.html): Every `strauss.json` setting with its type and default. A JSON schema for editor completion is at https://evo-mark.github.io/strauss-rs/strauss.schema.json.
-- [Command line](https://evo-mark.github.io/strauss-rs/reference/cli.html): The commands `prefix`, `diff`, `explain`, `init`, `migrate`, `include-autoloader`, `plan`, `config`, `packages`, `files`, `symbols` and `analyse`, with their options.
+- [Command line](https://evo-mark.github.io/strauss-rs/reference/cli.html): The commands `prefix`, `diff`, `explain`, `init`, `migrate`, `include-autoloader`, `plan`, `config`, `packages`, `files`, `symbols`, `list-symbols` and `analyse`, with their options.
 - [Installer script](https://evo-mark.github.io/strauss-rs/reference/installer.html): `bin/strauss-rs.sh`, which downloads the right release for your system, checks its checksum and runs it.
 
 ## Other
